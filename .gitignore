@@ -1,0 +1,8 @@
+.idea
+cache/*
+photo/*
+photos/*
+tmp/*.dump.json
+venv
+
+fgg.iml
