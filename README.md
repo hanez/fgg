@@ -14,6 +14,7 @@ More to come...
 
 ## To do:
 
+- Make it possible to recreate the gallery even when there are no photos at Flickr anymore!!!
 - Error handling. Not done in any way so far... :|
 - Make use of some CLI parameters to make it more comfortable to use fgg.
 - Configure the Python logging stuff and add logging for easy debugging... ;)
