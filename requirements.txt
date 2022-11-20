@@ -1,1 +1,2 @@
+crc32c==2.3
 flickr-api==0.7.5

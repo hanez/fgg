@@ -1,5 +1,4 @@
 .idea
-cache/*
 photo/*
 photos/*
 tmp/*.dump.json
