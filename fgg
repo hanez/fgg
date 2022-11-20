@@ -37,7 +37,7 @@ import pathlib
 import os
 import time
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 flickr_api_key = os.environ['FLICKR_API_KEY']
 flickr_api_secret = os.environ['FLICKR_API_SECRET']
@@ -51,13 +51,6 @@ auth_handler = flickr.auth.AuthHandler(
 flickr.set_auth_handler(auth_handler)
 user = flickr.test.login()
 
-
-def get_photo_count(f, pp, p):
-    return len(f.Photo.getWithoutGeoData(sort='date-taken-desc',
-                                         per_page=pp,
-                                         page=p))
-
-
 debug_max_photos = 10
 timezone = 'UTC+01:00'
 
@@ -68,8 +61,12 @@ page_count = 0
 photo_count = 0
 photo_page = 1
 photos_per_page = 500
-while get_photo_count(flickr, photos_per_page, photo_page):
-    count = get_photo_count(flickr, photos_per_page, photo_page)
+while True:
+    count = len(flickr.Photo.getWithoutGeoData(sort='date-taken-desc',
+                                               per_page=photos_per_page,
+                                               page=photo_page))
+    if not count:
+        break
     photo_count = photo_count + count
     print('.', flush=True, end='')
     photo_page += 1
@@ -175,7 +172,7 @@ while photo_page <= page_count:
                     target_file_name = target_file_name.replace(';)', '')
                     target_file_name = target_file_name.replace('\'', '')
                     target_file_name = target_file_name.replace('\"', '')
-                    target_file_name = target_file_name.replace('.', '')
+                    ##target_file_name = target_file_name.replace('.', '')
                     target_file_name = target_file_name.replace('!', '')
                     target_file_name = target_file_name.replace('/', '')
                     target_file_name = target_file_name.replace(':', '')
@@ -192,6 +189,7 @@ while photo_page <= page_count:
                     target_file_name = target_file_name.replace('>', '')
                     target_file_name = target_file_name.replace('$', '')
                     target_file_name = target_file_name.replace('%', '')
+                    # Remove trailing whitespaces.
                     target_file_name = target_file_name.rstrip()
                     target_file_name = target_file_name.replace(' ', '-')
 
@@ -204,9 +202,10 @@ while photo_page <= page_count:
                         photo['digest'] + '/' + \
                         photo['sizes'][flickr_size]['target_file_name']
 
-                    # TODO: Download photo file if not exist
+                    # TODO: Download photo file if not exists.
 
-                    # TODO: Create SHA sums for each photo file and add them to
+                    # TODO: Create SHA sums for each photo file and add them to.
+                    #  photo['sizes'][flickr_size][...]
                     photo['sizes'][flickr_size]['sha1'] = 'SHA1 of file: ' + \
                         photo['sizes'][flickr_size]['target_file']
 
