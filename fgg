@@ -35,9 +35,10 @@ import hashlib
 import json
 import pathlib
 import os
+import requests
 import time
 
-__version__ = "0.0.3"
+__version__ = "0.1.0"
 
 flickr_api_key = os.environ['FLICKR_API_KEY']
 flickr_api_secret = os.environ['FLICKR_API_SECRET']
@@ -51,8 +52,29 @@ auth_handler = flickr.auth.AuthHandler(
 flickr.set_auth_handler(auth_handler)
 user = flickr.test.login()
 
-debug_max_photos = 10
+# Some settings for execution. These should be configurable with CLI arguments.
+# Set max number of photos to process. 0 = No limit.
+debug_max_photos = 0
+# The timezone
 timezone = 'UTC+01:00'
+
+
+def hash_file(filename, algorithm='sha1'):
+    if algorithm == 'sha1':
+        h = hashlib.sha1()
+    if algorithm == 'sha256':
+        h = hashlib.sha256()
+    if algorithm == 'sha512':
+        h = hashlib.sha512()
+
+    with open(filename, 'rb') as file:
+        chunk = 0
+        while chunk != b'':
+            chunk = file.read(1024)
+            h.update(chunk)
+
+    return h.hexdigest()
+
 
 print('Creating gallery...')
 print('Counting pages...')
@@ -89,12 +111,23 @@ while photo_page <= page_count:
     for flickr_photo in flickr_photo_list:
         print(str(i) + "/" + str(photo_count))
         photo = {}
-        if os.path.exists('db/' + flickr_photo.id + '/meta.json'):
-            with open('db/' + flickr_photo.id + '/meta.json', 'rb') as photo_json_file:
-                ##print('Loading from cache: cache/flickr/' + flickr_photo.id + '/meta.json')
-                photo = json.load(photo_json_file)
+        if os.path.exists('cache/' + flickr_photo.id + '/meta.json'):
+            with open('cache/' + flickr_photo.id + '/meta.json', 'rb') as f:
+                print('Loading photo from cache file: cache/' + flickr_photo.id + '/meta.json')
+                photo = json.load(f)
+                f.close()
         else:
+            print('Creating photo cache file: cache/' + flickr_photo.id + '/meta.json')
             flickr_photo_info = flickr.Photo.getInfo(flickr_photo)
+
+            photo['date_posted_timestamp'] = int(flickr_photo_info['posted'])
+            photo['date_taken'] = flickr_photo_info['taken']
+            photo['date_taken_timestamp'] = int(time.mktime(
+                time.strptime(flickr_photo_info['taken'], '%Y-%m-%d %H:%M:%S')))
+
+            photo['date_updated_timestamp'] = int(flickr_photo_info['lastupdate'])
+            photo['date_uploaded_timestamp'] = int(flickr_photo_info['dateuploaded'])
+            photo['description'] = flickr_photo_info['description']
 
             ########################################################################################
             # START ################################################################################
@@ -118,107 +151,133 @@ while photo_page <= page_count:
             # END ##################################################################################
             ########################################################################################
 
-            pathlib.Path('db/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
-            with open('db/' + flickr_photo.id + '/meta.json', 'w') as photo_json_file:
-                photo['title'] = flickr_photo.title
-                photo['date_updated_timestamp'] = int(flickr_photo_info['lastupdate'])
-                photo['date_posted_timestamp'] = int(flickr_photo_info['posted'])
-                photo['date_taken'] = flickr_photo_info['taken']
-                photo['date_taken_timestamp'] = int(time.mktime(
-                    time.strptime(flickr_photo_info['taken'], '%Y-%m-%d %H:%M:%S')))
+            photo['fgg_id'] = str(photo['date_taken_timestamp']) + '-' + str(i).rjust(7, '0')
+            photo['flickr_id'] = flickr_photo.id
+            photo['photo_number'] = i
 
-                photo['date_uploaded_timestamp'] = int(flickr_photo_info['dateuploaded'])
-                photo['description'] = flickr_photo_info['description']
+            flickr_photo_tags = []
+            for flickr_photo_tag in flickr_photo_info['tags']:
+                flickr_photo_tags.append(flickr_photo_tag['text'])
 
-                photo['fgg_id'] = str(photo['date_taken_timestamp']) + '-' + str(i).rjust(7, '0')
-                photo['flickr_id'] = flickr_photo.id
+            photo['tags'] = []
+            photo['tags'] = flickr_photo_tags
+            #photo['tags'].sort()
+            # TODO: This does not work and need be fixed...!
+            overall_tags = list(set(overall_tags + flickr_photo_tags))
 
-                photo['photo_number'] = i
+            photo['target_path'] = 'photo/' + photo['digest']
+            photo['timezone'] = timezone
+            photo['title'] = flickr_photo.title
 
-                flickr_photo_tags = []
-                for flickr_photo_tag in flickr_photo_info['tags']:
-                    flickr_photo_tags.append(flickr_photo_tag['text'])
+            if os.path.exists('cache/' + flickr_photo.id + '/sizes.json'):
+                with open('cache/' + flickr_photo.id + '/sizes.json', 'rb') as f:
+                    print('Loading sizes from cache file: cache/' + flickr_photo.id + '/sizes.json')
+                    flickr_photo_sizes = json.load(f)
+                    f.close()
+            else:
+                pathlib.Path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
+                with open('cache/' + flickr_photo.id + '/sizes.json', 'w') as f:
+                    print('Creating sizes cache file: cache/' + flickr_photo.id + '/sizes.json')
+                    flickr_photo_sizes = flickr_photo.getSizes()
+                    json.dump(flickr_photo_sizes, f, ensure_ascii=False, indent=2, sort_keys=True)
+                    f.close()
 
-                photo['tags'] = flickr_photo_tags
-                photo['tags'].sort()
-                # TODO: This does not work and need be fixed...!
-                overall_tags = list(set(overall_tags + photo['tags']))
+            photo['sizes'] = {}
+            for flickr_photo_size in flickr_photo_sizes:
+                flickr_size = flickr_photo_sizes[flickr_photo_size]['url'].split("/")[-2] \
+                    .replace('/', '')
+                if flickr_photo_sizes[flickr_photo_size]['label'] == "Square":
+                    flickr_size = "x"
 
-                photo['timezone'] = timezone
+                photo['sizes'][flickr_size] = {}
+                photo['sizes'][flickr_size] = flickr_photo_sizes[flickr_photo_size]
+                photo['sizes'][flickr_size]['size'] = flickr_size
 
-                flickr_photo_sizes = flickr_photo.getSizes()
-                photo['sizes'] = {}
-                for flickr_photo_size in flickr_photo_sizes:
-                    flickr_size = flickr_photo_sizes[flickr_photo_size]['url'].split("/")[-2]\
-                                                                              .replace('/', '')
+                # Create target photo folder dir and filenames
+                # TODO: The string replacement should be optimized to make better file names.
+                target_file_name = flickr_photo.title.replace(':)', '')
+                target_file_name = target_file_name.replace(':D', '')
+                target_file_name = target_file_name.replace(';)', '')
+                target_file_name = target_file_name.replace('\'', '')
+                target_file_name = target_file_name.replace('\"', '')
+                ##target_file_name = target_file_name.replace('.', '')
+                target_file_name = target_file_name.replace('!', '')
+                target_file_name = target_file_name.replace('/', '')
+                target_file_name = target_file_name.replace(':', '')
+                target_file_name = target_file_name.replace('(', '')
+                target_file_name = target_file_name.replace(')', '')
+                target_file_name = target_file_name.replace('[', '')
+                target_file_name = target_file_name.replace(']', '')
+                target_file_name = target_file_name.replace('{', '')
+                target_file_name = target_file_name.replace('}', '')
+                target_file_name = target_file_name.replace(';', '')
+                target_file_name = target_file_name.replace('?', '')
+                target_file_name = target_file_name.replace('&', '')
+                target_file_name = target_file_name.replace('<', '')
+                target_file_name = target_file_name.replace('>', '')
+                target_file_name = target_file_name.replace('$', '')
+                target_file_name = target_file_name.replace('%', '')
+                # Remove trailing whitespaces.
+                target_file_name = target_file_name.rstrip()
+                target_file_name = target_file_name.replace(' ', '-')
 
-                    if flickr_photo_sizes[flickr_photo_size]['label'] == "Square":
-                        flickr_size = "x"
+                target_file_name = target_file_name + '-' + photo['fgg_id'] + '-' + \
+                    flickr_photo_sizes[flickr_photo_size]['label'].replace(' ', '-')
 
-                    photo['sizes'][flickr_size] = {}
+                target_file_name = target_file_name + '.jpg'
 
-                    # Remove all unneeded keys
-                    flickr_photo_sizes[flickr_photo_size].pop('media')
-                    flickr_photo_sizes[flickr_photo_size].pop('source')
-                    flickr_photo_sizes[flickr_photo_size].pop('url')
-                    photo['sizes'][flickr_size] = flickr_photo_sizes[flickr_photo_size]
+                photo['sizes'][flickr_size]['target_file_name'] = target_file_name
+                photo['sizes'][flickr_size]['target_file'] = \
+                    'photo/' + photo['digest'] + '/' + \
+                    photo['sizes'][flickr_size]['target_file_name']
 
-                    photo['sizes'][flickr_size]['size'] = flickr_size
+                # Download photo file if it not exists.
+                if not os.path.exists(photo['sizes'][flickr_size]['target_file']):
+                    url = flickr_photo_sizes[flickr_photo_size]['source']
+                    req = requests.get(url)
+                    print('Downloading: ' + url)
+                    pathlib.Path(photo['sizes'][flickr_size]['target_file'].rsplit('/', 1)[0]) \
+                        .mkdir(parents=True, exist_ok=True)
 
-                    # Create target photo folder dir and filenames
-                    # TODO: The string replacement should be optimized to make better file names.
-                    target_file_name = flickr_photo.title.replace(':)', '')
-                    target_file_name = target_file_name.replace(':D', '')
-                    target_file_name = target_file_name.replace(';)', '')
-                    target_file_name = target_file_name.replace('\'', '')
-                    target_file_name = target_file_name.replace('\"', '')
-                    ##target_file_name = target_file_name.replace('.', '')
-                    target_file_name = target_file_name.replace('!', '')
-                    target_file_name = target_file_name.replace('/', '')
-                    target_file_name = target_file_name.replace(':', '')
-                    target_file_name = target_file_name.replace('(', '')
-                    target_file_name = target_file_name.replace(')', '')
-                    target_file_name = target_file_name.replace('[', '')
-                    target_file_name = target_file_name.replace(']', '')
-                    target_file_name = target_file_name.replace('{', '')
-                    target_file_name = target_file_name.replace('}', '')
-                    target_file_name = target_file_name.replace(';', '')
-                    target_file_name = target_file_name.replace('?', '')
-                    target_file_name = target_file_name.replace('&', '')
-                    target_file_name = target_file_name.replace('<', '')
-                    target_file_name = target_file_name.replace('>', '')
-                    target_file_name = target_file_name.replace('$', '')
-                    target_file_name = target_file_name.replace('%', '')
-                    # Remove trailing whitespaces.
-                    target_file_name = target_file_name.rstrip()
-                    target_file_name = target_file_name.replace(' ', '-')
+                    print('Writing file to: ' + photo['sizes'][flickr_size]['target_file'])
+                    with open(photo['sizes'][flickr_size]['target_file'], 'wb') as f:
+                        f.write(req.content)
+                        f.close()
+                        print("Download Completed!")
 
-                    target_file_name = target_file_name + '-' + photo['fgg_id'] + \
-                        '-' + flickr_photo_sizes[flickr_photo_size]['label'].replace(' ', '-')
-                    target_file_name = target_file_name + '.jpg'
+                # Create checksums for each photo file and add them to
+                # photo['sizes'][flickr_size][...].
+                photo['sizes'][flickr_size]['sha1'] = \
+                    hash_file(photo['sizes'][flickr_size]['target_file'], 'sha1')
 
-                    photo['sizes'][flickr_size]['target_file_name'] = target_file_name
-                    photo['sizes'][flickr_size]['target_file'] = 'photo/' + \
-                        photo['digest'] + '/' + \
-                        photo['sizes'][flickr_size]['target_file_name']
+                photo['sizes'][flickr_size]['sha256'] = \
+                    hash_file(photo['sizes'][flickr_size]['target_file'], 'sha256')
 
-                    # TODO: Download photo file if not exists.
+                photo['sizes'][flickr_size]['sha512'] = \
+                    hash_file(photo['sizes'][flickr_size]['target_file'], 'sha512')
 
-                    # TODO: Create SHA sums for each photo file and add them to.
-                    #  photo['sizes'][flickr_size][...]
-                    photo['sizes'][flickr_size]['sha1'] = 'SHA1 of file: ' + \
-                        photo['sizes'][flickr_size]['target_file']
+                # Remove all unneeded keys
+                photo['sizes'][flickr_size].pop('media')
+                photo['sizes'][flickr_size].pop('source')
+                photo['sizes'][flickr_size].pop('url')
 
-                    photo['sizes'][flickr_size]['sha256'] = 'SHA256 of file: ' + \
-                        photo['sizes'][flickr_size]['target_file']
+            pathlib.Path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
+            with open('cache/' + flickr_photo.id + '/meta.json', 'w') as f:
+                json.dump(photo, f, ensure_ascii=False, indent=2, sort_keys=True)
+                f.close()
 
-                    photo['sizes'][flickr_size]['sha512'] = 'SHA512 of file: ' + \
-                        photo['sizes'][flickr_size]['target_file']
-
-                json.dump(photo, photo_json_file, ensure_ascii=False, indent=2, sort_keys=True)
+            with open(photo['target_path'] + '/meta.json', 'w') as f:
+                json.dump(photo, f, ensure_ascii=False, indent=2, sort_keys=True)
+                f.close()
 
         i -= 1
         if i == photo_count - debug_max_photos:
             exit(0)
 
     photo_page += 1
+
+photos = {}
+photos['tags'] = overall_tags
+with open('photos/meta.json', 'w') as f:
+    json.dump(photos, f, ensure_ascii=False, indent=2, sort_keys=True)
+    f.close()

@@ -6,6 +6,12 @@ fgg is a free gallery generator for static site generators like Hugo, Jekyll, Ni
 
 More to come...
 
+## Requirenents:
+
+- Python 3.* (I don't now the concrete version right now. I use only Python 3.10 at the moment. Could be that fgg is 
+  running with an older version, but it could also be that required libs do not. Please report your Python version to 
+  me if fgg works for you to help me to create a compatibility list.)
+
 ## To do:
 
 - Error handling. Not done in any way so far... :|
