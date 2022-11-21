@@ -1,9 +1,9 @@
 .idea
-fgg.build
+out
 photo/*
 photos/*
 tmp/*.dump.json
 venv
 
-fgg.bin
+bin/fgg
 fgg.iml

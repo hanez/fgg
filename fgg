@@ -2,6 +2,7 @@
 
 # fgg - A free gallery generator for static site generators like Hugo, Jekyll,
 # Nikola etc. using Flickr as data source.
+# Source repository: https://git.unixpeople.org/hanez/fgg
 
 # Copyright (c) 2022 Johannes Findeisen
 #
