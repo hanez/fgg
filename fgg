@@ -45,7 +45,7 @@ sys.stdout.write("\x1b]2;fgg\x07")
 # Set the title for Windows.
 os.system("fgg")
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 flickr_api_key = os.environ['FLICKR_API_KEY']
 flickr_api_secret = os.environ['FLICKR_API_SECRET']
@@ -205,11 +205,18 @@ while photo_page <= page_count:
                 target_file_name = flickr_photo.title.replace(':)', '')
                 target_file_name = target_file_name.replace(':D', '')
                 target_file_name = target_file_name.replace(';)', '')
+                target_file_name = flickr_photo.title.replace(':-)', '')
+                target_file_name = target_file_name.replace(':-D', '')
+                target_file_name = target_file_name.replace(';-)', '')
                 target_file_name = target_file_name.replace('\'', '')
                 target_file_name = target_file_name.replace('\"', '')
-                ##target_file_name = target_file_name.replace('.', '')
+                # Maybe remove all dots too... but maybe it doesn't matter.
+                #target_file_name = target_file_name.replace('.', '')
+                target_file_name = target_file_name.replace(',', '')
                 target_file_name = target_file_name.replace('!', '')
-                target_file_name = target_file_name.replace('/', '')
+                target_file_name = target_file_name.replace(' / ', '-')
+                target_file_name = target_file_name.replace('/ ', '-')
+                target_file_name = target_file_name.replace('/', '-')
                 target_file_name = target_file_name.replace(':', '')
                 target_file_name = target_file_name.replace('(', '')
                 target_file_name = target_file_name.replace(')', '')
@@ -227,6 +234,10 @@ while photo_page <= page_count:
                 # Remove trailing whitespaces.
                 target_file_name = target_file_name.rstrip()
                 target_file_name = target_file_name.replace(' ', '-')
+                target_file_name = target_file_name.replace('-----', '-')
+                target_file_name = target_file_name.replace('----', '-')
+                target_file_name = target_file_name.replace('---', '-')
+                target_file_name = target_file_name.replace('--', '-')
 
                 target_file_name = target_file_name + '-' + photo['fgg_id'] + '-' + \
                     flickr_photo_sizes[flickr_photo_size]['label'].replace(' ', '-')
