@@ -45,7 +45,7 @@ sys.stdout.write("\x1b]2;fgg\x07")
 # Set the title for Windows.
 os.system("fgg")
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 flickr_api_key = os.environ['FLICKR_API_KEY']
 flickr_api_secret = os.environ['FLICKR_API_SECRET']
@@ -136,9 +136,8 @@ while photo_page <= page_count:
             photo['date_uploaded_timestamp'] = int(flickr_photo_info['dateuploaded'])
             photo['description'] = flickr_photo_info['description']
 
-            ########################################################################################
             # START ################################################################################
-            # NEVER CHANGE THE FOLLOWING LINES (UNTIL "# END") EXPECT YOU REALLY NEED OR WANT TO
+            # NEVER CHANGE THE FOLLOWING LINES (UP TO "# END") UNLESS YOU REALLY NEED OR WANT TO
             # CHANGE THE PHOTO ID!!! ALL LINKS TO THE PHOTO PAGE WILL BECOME BROKEN!!! - hanez
             digest1 = hashlib.sha256(str.encode(str(flickr_photo.id) +
                                                 str(flickr_photo_info['taken']))).hexdigest()
@@ -156,7 +155,6 @@ while photo_page <= page_count:
             digest = str(hex(crc32c.crc32c(bytes(digest, 'ascii')))).replace('0x', '')
             photo['digest'] = digest
             # END ##################################################################################
-            ########################################################################################
 
             photo['fgg_id'] = str(photo['date_taken_timestamp']) + '-' + str(i).rjust(7, '0')
             photo['flickr_id'] = flickr_photo.id
@@ -205,7 +203,7 @@ while photo_page <= page_count:
                 target_file_name = flickr_photo.title.replace(':)', '')
                 target_file_name = target_file_name.replace(':D', '')
                 target_file_name = target_file_name.replace(';)', '')
-                target_file_name = flickr_photo.title.replace(':-)', '')
+                target_file_name = target_file_name.replace(':-)', '')
                 target_file_name = target_file_name.replace(':-D', '')
                 target_file_name = target_file_name.replace(';-)', '')
                 target_file_name = target_file_name.replace('\'', '')
