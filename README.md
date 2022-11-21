@@ -11,9 +11,9 @@ More to come...
 - Python 3.* (I don't now the concrete version right now. I use only Python 3.10 at the moment. Could be that fgg is 
   running with an older version, but it could also be that required libs do not. Please report your Python version to 
   me if fgg works for you to help me to create a compatibility list.)
-- crc32c 2.3 - [https://pypi.org/project/crc32c/]()
-- flickr-api 0.7.5 - [https://pypi.org/project/flickr-api/]()
-- requests 2.28.1 - [https://pypi.org/project/requests/]()
+- crc32c 2.3 - [https://pypi.org/project/crc32c/](https://pypi.org/project/crc32c/)
+- flickr-api 0.7.5 - [https://pypi.org/project/flickr-api/](https://pypi.org/project/flickr-api/)
+- requests 2.28.1 - [https://pypi.org/project/requests/](https://pypi.org/project/requests/)
 
 ## To do:
 

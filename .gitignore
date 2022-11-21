@@ -1,7 +1,9 @@
 .idea
+fgg.build
 photo/*
 photos/*
 tmp/*.dump.json
 venv
 
+fgg.bin
 fgg.iml
