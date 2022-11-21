@@ -36,7 +36,13 @@ import json
 import pathlib
 import os
 import requests
+import sys
 import time
+
+# Set the title for Linux and macOS.
+sys.stdout.write("\x1b]2;fgg\x07")
+# Set the title for Windows.
+os.system("fgg")
 
 __version__ = "0.1.0"
 
