@@ -22,7 +22,7 @@ More to come...
 - Make use of some CLI parameters to make it more comfortable to use fgg.
 - Configure the Python logging stuff and add logging for easy debugging... ;)
 - ~~Save as most cached data as JSON files as possible. Object dumps are related to Ruby only at the moment.
-  So limit the use of Marshal to a minimum!~~ Nor marshal nor pickle is used anymore. All cache is JSON.
+  So limit the use of Marshal to a minimum!~~ No marshal nor pickle is used anymore. All cache is JSON.
 - ~~Rewrite fgg in Python. **Ruby is a weird language o_O!**~~ Python is the now the language of choice.
 - Use a template engine for HTML output generation, but not before the rewrite in Python.
 - Add more targets, not only Jekyll. Nikola preferred!
