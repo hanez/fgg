@@ -4,6 +4,7 @@ cache/*
 photo/*
 photos/*
 tmp/*.dump.json
+tmp/*.rb
 venv
 
 bin/fgg
