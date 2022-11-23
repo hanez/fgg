@@ -154,7 +154,7 @@ while photo_page <= page_count:
                                           str(flickr_photo_info['taken']))).hexdigest()
 
             digest = str(str(digest1) + str(digest2) + str(digest3) + str(digest4))
-            digest = str(hex(crc32c.crc32c(bytes(digest, 'ascii')))).replace('0x', '')
+            digest = str(hex(crc32c(bytes(digest, 'ascii')))).replace('0x', '')
             photo['digest'] = digest
             # END ##################################################################################
 
@@ -279,7 +279,10 @@ while photo_page <= page_count:
                 # Remove all unneeded keys
                 photo['sizes'][flickr_size].pop('media')
                 photo['sizes'][flickr_size].pop('source')
-                photo['sizes'][flickr_size].pop('url')
+                # Do not remove the URL because you may want to use it on your website photo page.
+                # It makes sense to not delete it when not using the "delete" feature of fgg or when
+                # having a pro account.
+                #photo['sizes'][flickr_size].pop('url')
 
             Path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
             with open('cache/' + flickr_photo.id + '/meta.json', 'w') as f:
