@@ -212,8 +212,8 @@ while photo_page <= page_count:
                 target_file_name = target_file_name.replace(';-)', '')
                 target_file_name = target_file_name.replace('\'', '')
                 target_file_name = target_file_name.replace('\"', '')
-                # Maybe remove all dots too... but maybe it doesn't matter.
-                #target_file_name = target_file_name.replace('.', '')
+                # Maybe not remove all dots too...?
+                target_file_name = target_file_name.replace('.', '')
                 target_file_name = target_file_name.replace(',', '')
                 target_file_name = target_file_name.replace('!', '')
                 target_file_name = target_file_name.replace(' / ', '-')

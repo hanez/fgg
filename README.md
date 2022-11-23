@@ -6,7 +6,7 @@ fgg is a free gallery generator for static site generators like Hugo, Jekyll, Ni
 
 More to come...
 
-## Requirenents:
+## Requirements
 
 - Python 3.* (I don't now the concrete version right now. I use only Python 3.10 at the moment. Could be that fgg is 
   running with an older version, but it could also be that required libs do not. Please report your Python version to 
@@ -15,12 +15,13 @@ More to come...
 - flickr-api 0.7.5 - [https://pypi.org/project/flickr-api/](https://pypi.org/project/flickr-api/)
 - requests 2.28.1 - [https://pypi.org/project/requests/](https://pypi.org/project/requests/)
 
-## To do:
+## To do
 
 - Make it possible to recreate the gallery even when there are no photos at Flickr anymore!!!
 - Error handling. Not done in any way so far... :|
 - Make use of some CLI parameters to make it more comfortable to use fgg.
 - Configure the Python logging stuff and add logging for easy debugging... ;)
+- Set User-Agent for the requests module.
 - ~~Save as most cached data as JSON files as possible. Object dumps are related to Ruby only at the moment.
   So limit the use of Marshal to a minimum!~~ No marshal nor pickle is used anymore. All cache is JSON.
 - ~~Rewrite fgg in Python. **Ruby is a weird language o_O!**~~ Python is the now the language of choice.
