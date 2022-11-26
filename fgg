@@ -37,11 +37,11 @@ from hashlib import sha1, sha256, sha512, sha3_256, sha3_512
 from json import dump, load
 from os import environ
 from os.path import exists
-from pathlib import Path
+from pathlib import Path as path
 from requests import get
 from time import mktime, strptime
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 flickr_api_key = environ['FLICKR_API_KEY']
 flickr_api_secret = environ['FLICKR_API_SECRET']
@@ -184,7 +184,7 @@ while photo_page <= page_count:
                     flickr_photo_sizes = load(f)
                     f.close()
             else:
-                Path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
+                path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
                 with open('cache/' + flickr_photo.id + '/sizes.json', 'w') as f:
                     print('Creating sizes cache file: cache/' + flickr_photo.id + '/sizes.json')
                     flickr_photo_sizes = flickr_photo.getSizes()
@@ -256,7 +256,7 @@ while photo_page <= page_count:
                     url = flickr_photo_sizes[flickr_photo_size]['source']
                     request = get(url)
                     print('Downloading file: ' + url)
-                    Path(photo['sizes'][flickr_size]['target_file'].rsplit('/', 1)[0]) \
+                    path(photo['sizes'][flickr_size]['target_file'].rsplit('/', 1)[0]) \
                         .mkdir(parents=True, exist_ok=True)
 
                     print('Writing file to: ' + photo['sizes'][flickr_size]['target_file'])
@@ -284,7 +284,7 @@ while photo_page <= page_count:
                 # having a pro account.
                 #photo['sizes'][flickr_size].pop('url')
 
-            Path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
+            path('cache/' + flickr_photo.id).mkdir(parents=True, exist_ok=True)
             with open('cache/' + flickr_photo.id + '/meta.json', 'w') as f:
                 dump(photo, f, ensure_ascii=False, indent=2, sort_keys=True)
                 f.close()
