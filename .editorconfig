@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+max_line_length = 120
+tab_width = 2
+
+[{*.har,*.json}]
+max_line_length = 160
+
+[{*.markdown,*.md}]
+indent_size = 4
+tab_width = 4
+
+[Makefile]
+indent_style = tab
+tab_width = 4
+
+[{*.py,*.pyw}]
+indent_size = 4
+max_line_length = 100
+tab_width = 4
