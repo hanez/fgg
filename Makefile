@@ -1,5 +1,5 @@
 all:
-	nuitka3 --follow-imports --output-dir=./out/ -o ./bin/fgg fgg
+	nuitka3 --follow-imports --output-dir=./out/ -o ./out/fgg fgg
 
 clean:
 	rm -rf ./bin/fgg
