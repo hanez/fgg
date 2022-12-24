@@ -15,6 +15,11 @@ fgg is a free gallery generator for static site generators like Hugo, Jekyll, Ni
 
 More to come...
 
+## Demo
+
+A demo can be found at [https://hanez.org/photos/](https://hanez.org/photos), but this gallery is generated using 
+my old prototype script written in Ruby. But fgg will become a replacement for it.
+
 ## Requirements
 
 - Python 3.* (I don't now the concrete version right now. I use only Python 3.10 at the moment. Could be that fgg is 
